@@ -1,18 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:flutter/material.dart';
 import 'user_profile.dart';
 
-class PostWidget extends StatelessWidget {
+class PostWidget extends StatefulWidget {
   final String authorProfilePicture;
   final String username;
   final int rating;
   final String postPicture;
   final String description;
   final String userId;
-
+  
   PostWidget({
     required this.authorProfilePicture,
     required this.username,
@@ -21,7 +21,13 @@ class PostWidget extends StatelessWidget {
     required this.description,
     required this.userId,
   });
+  @override
+  _PostWidgetState createState() => _PostWidgetState();
 
+}
+
+class _PostWidgetState extends State<PostWidget> {
+  bool isExpanded = false;
   List<Widget> buildStarRating(int rating) {
     List<Widget> stars = [];
     for (int i = 1; i <= 5; i++) {
@@ -45,7 +51,7 @@ class PostWidget extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(authorProfilePicture),
+                backgroundImage: NetworkImage(widget.authorProfilePicture),
               ),
               SizedBox(width: 8),
               GestureDetector(
@@ -53,12 +59,12 @@ class PostWidget extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UserProfileScreen(userId: userId),
+                      builder: (context) => UserProfileScreen(userId: widget.userId),
                     ),
                   );
                 },
                 child: Text(
-                  username,
+                  widget.username,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -73,23 +79,47 @@ class PostWidget extends StatelessWidget {
             children: [
               Text('Rating:'),
               SizedBox(width: 8),
-              Row(children: buildStarRating(rating)),
+              Row(children: buildStarRating(widget.rating)),
             ],
           ),
           SizedBox(height: 8),
-          Image.network(postPicture),
+          Image.network(widget.postPicture),
           SizedBox(height: 8),
           RichText(
             text: TextSpan(
               style: DefaultTextStyle.of(context).style,
               children: [
                 TextSpan(
-                  text: '${username} ',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+        text: '${widget.username} ',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      isExpanded
+          ? TextSpan(
+              text: widget.description,
+            )
+          : TextSpan(
+              text: widget.description.length > 250
+                  ? widget.description.substring(0, 250) + '...'
+                  : widget.description,
+            ),
+      widget.description.length > 250
+          ? WidgetSpan(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    isExpanded = !isExpanded;
+                  });
+                },
+                child: Text(
+                  isExpanded ? ' View Less' : ' View More',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                TextSpan(
-                  text: description,
-                ),
+              ),
+            )
+          : TextSpan(),
               ],
             ),
           ),
@@ -318,6 +348,7 @@ class UserProfileScreen extends StatelessWidget {
   }
 }
 
+
 class FullPostScreen extends StatelessWidget {
   final String authorProfilePicture;
   final String username;
@@ -387,12 +418,13 @@ class FullPostScreen extends StatelessWidget {
             Image.network(postPicture),
             SizedBox(height: 8),
             RichText(
-              text: TextSpan(
-                style: TextStyle(
+              
+            text: TextSpan(
+              style: TextStyle(
                   color: Colors.black,
-                  fontSize: 18, 
-                ),
-                children: [
+                  fontSize: 16,
+                  ),
+              children: [
                   TextSpan(
                     text: '$username ',
                     style: TextStyle(
@@ -405,7 +437,7 @@ class FullPostScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+          ),
           ],
         ),
       ),
