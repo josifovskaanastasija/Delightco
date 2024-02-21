@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "762628921540",
+    "project_id": "delightco-86d31",
+    "storage_bucket": "delightco-86d31.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762628921540:android:b051c32cdec32f8d951191",
+        "android_client_info": {
+          "package_name": "android.delightco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuomOJtOmgFdaNyRJ4l3IF5ibRn_wekJc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
