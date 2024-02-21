@@ -19,34 +19,33 @@ class _SignupScreenState extends State<SignupScreen> {
       TextEditingController();
   File? _pickedImage;
 
-Future<void> _pickImage() async {
-  final imageSource = await showDialog<ImageSource>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Select Image Source'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(ImageSource.gallery),
-          child: Text('Gallery'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(ImageSource.camera),
-          child: Text('Camera'),
-        ),
-      ],
-    ),
-  );
+  Future<void> _pickImage() async {
+    final imageSource = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select Image Source'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(ImageSource.gallery),
+            child: Text('Gallery'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(ImageSource.camera),
+            child: Text('Camera'),
+          ),
+        ],
+      ),
+    );
 
-  if (imageSource != null) {
-    final pickedImage = await ImagePicker().pickImage(source: imageSource);
-    if (pickedImage != null) {
-      setState(() {
-        _pickedImage = File(pickedImage.path);
-      });
+    if (imageSource != null) {
+      final pickedImage = await ImagePicker().pickImage(source: imageSource);
+      if (pickedImage != null) {
+        setState(() {
+          _pickedImage = File(pickedImage.path);
+        });
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -62,12 +61,12 @@ Future<void> _pickImage() async {
             GestureDetector(
               onTap: _pickImage,
               child: Stack(
-                children: [CircleAvatar(
+                children: [
+                  CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey,
-                    backgroundImage: _pickedImage != null
-                        ? FileImage(_pickedImage!)
-                        : null,
+                    backgroundImage:
+                        _pickedImage != null ? FileImage(_pickedImage!) : null,
                   ),
                   Positioned(
                     bottom: 0,
@@ -84,11 +83,11 @@ Future<void> _pickImage() async {
                         color: Colors.white,
                       ),
                     ),
-                  ),],
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 16),
-
             TextField(
               controller: emailController,
               decoration: InputDecoration(labelText: 'Email'),
@@ -105,45 +104,50 @@ Future<void> _pickImage() async {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-  onPressed: () async {
-    if (passwordController.text == confirmPasswordController.text &&
-        _pickedImage != null) {
-      User? user = await AuthService().signUpWithEmailAndPassword(
-        emailController.text,
-        passwordController.text,
-        _pickedImage!,
-      );
+              onPressed: () async {
+                if (passwordController.text == confirmPasswordController.text &&
+                    _pickedImage != null) {
+                  User? user = await AuthService().signUpWithEmailAndPassword(
+                    emailController.text,
+                    passwordController.text,
+                    _pickedImage!,
+                  );
 
-      if (user != null) {
-        await saveUserProfile(user.uid, emailController.text, _pickedImage!);
+                  if (user != null) {
+                    await saveUserProfile(
+                        user.uid, emailController.text, _pickedImage!);
 
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        print('Signup failed');
-      }
-    } else {
-      print('Passwords do not match or profile picture not selected');
-    }
-  },
-  child: Text('Sign Up'),
-)
+                    Navigator.pushReplacementNamed(context, '/home');
+                  } else {
+                    print('Signup failed');
+                  }
+                } else {
+                  print(
+                      'Passwords do not match or profile picture not selected');
+                }
+              },
+              child: Text('Sign Up'),
+            )
           ],
         ),
       ),
     );
   }
-Future<void> saveUserProfile(String uid, String email, File profilePicture) async {
-  final storageRef = firebase_storage.FirebaseStorage.instance.ref().child('profile_pictures/$uid.jpg');
-  await storageRef.putFile(profilePicture);
-  String username = email.split('@')[0]; 
 
-  await FirebaseFirestore.instance.collection('users').doc(uid).set({
-    'email': email,
-    'profilePictureUrl': await storageRef.getDownloadURL(),
-    'username': username,
-    'followers': 0,
-    'following': 0,
-  });
-}
+  Future<void> saveUserProfile(
+      String uid, String email, File profilePicture) async {
+    final storageRef = firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child('profile_pictures/$uid.jpg');
+    await storageRef.putFile(profilePicture);
+    String username = email.split('@')[0];
 
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'email': email,
+      'profilePictureUrl': await storageRef.getDownloadURL(),
+      'username': username,
+      'followers': 0,
+      'following': 0,
+    });
+  }
 }

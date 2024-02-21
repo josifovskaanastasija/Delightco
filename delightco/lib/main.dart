@@ -14,8 +14,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_profile.dart';
 import 'post_widget.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -45,26 +43,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  String username = ''; 
-UserProfile userProfile = UserProfile();
+  String username = '';
+  UserProfile userProfile = UserProfile();
 
-    @override
+  @override
   void initState() {
     super.initState();
-  FirebaseAuth.instance.authStateChanges().listen((User? user) {
-  if (user != null && user.email != null) {
-    updateUsername(user.email!);
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null && user.email != null) {
+        updateUsername(user.email!);
+      }
+    });
   }
-});
 
-  }
-
-    void updateUsername(String email) {
+  void updateUsername(String email) {
     setState(() {
       username = email.split('@')[0];
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -74,21 +70,20 @@ UserProfile userProfile = UserProfile();
         actions: [
           IconButton(
             icon: Icon(Icons.search),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
           IconButton(
             icon: Icon(Icons.explore),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
-       body: Center(
+      body: Center(
         child: Column(
           children: [
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('posts').snapshots(),
+              stream:
+                  FirebaseFirestore.instance.collection('posts').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator();
@@ -101,49 +96,49 @@ UserProfile userProfile = UserProfile();
                 return Expanded(
                   child: ListView.builder(
                     itemCount: posts.length,
-                    itemBuilder: (context, index)  {
+                    itemBuilder: (context, index) {
                       var post = posts[index].data() as Map<String, dynamic>;
-                      
+
                       return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('users')
-                .doc(post['userId'])
-                .get(),
-            builder: (context, userSnapshot) {
-              if (userSnapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              }
+                        future: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(post['userId'])
+                            .get(),
+                        builder: (context, userSnapshot) {
+                          if (userSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
 
-              
+                          if (userSnapshot.hasError) {
+                            print("UserID: ${post['userId']}");
+                            return Text('Error: ${userSnapshot.error}');
+                          }
 
+                          if (userSnapshot.hasData &&
+                              userSnapshot.data!.exists) {
+                            var username = userSnapshot.data?['username'] ?? '';
+                            var profilePictureUrl =
+                                userSnapshot.data?['profilePictureUrl'] ?? '';
+                            print("profilePictureUrl: $profilePictureUrl");
 
-
-              if (userSnapshot.hasError) {
-                print("UserID: ${post['userId']}");
-                return Text('Error: ${userSnapshot.error}');
-                
-              }
-
-               if (userSnapshot.hasData && userSnapshot.data!.exists) {
-      var username = userSnapshot.data?['username'] ?? '';
-      var profilePictureUrl = userSnapshot.data?['profilePictureUrl'] ?? '';
-      print("profilePictureUrl: $profilePictureUrl");
-
-      return PostWidget(
-        authorProfilePicture: profilePictureUrl,
-        username: username,
-        rating: post['rating'],
-        postPicture: post['imageUrl'],
-        description: post['description'],
-      );
-    } else {
-      print("UserID: ${post['userId']}");
-      return Text('User document not found or does not contain a username field.');
-    }
+                            return PostWidget(
+                              authorProfilePicture: profilePictureUrl,
+                              username: username,
+                              rating: post['rating'],
+                              postPicture: post['imageUrl'],
+                              description: post['description'],
+                              userId: post['userId'],
+                            );
+                          } else {
+                            print("UserID: ${post['userId']}");
+                            return Text(
+                                'User document not found or does not contain a username field.');
+                          }
+                        },
+                      );
                     },
-                  );
-              },
-            ),
+                  ),
                 );
               },
             )
@@ -159,7 +154,7 @@ UserProfile userProfile = UserProfile();
             _currentIndex = index;
             if (index == 2) {
               Navigator.pushNamed(context, '/add_post');
-            } else if(index==3){
+            } else if (index == 3) {
               Navigator.pushNamed(context, '/profile');
             }
           });
@@ -172,32 +167,32 @@ UserProfile userProfile = UserProfile();
           BottomNavigationBarItem(
             icon: Icon(Icons.bookmark),
             label: 'Bookmarks',
-          ), BottomNavigationBarItem(
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.add),
             label: 'Add Post',
           ),
-         BottomNavigationBarItem(
-  icon: FirebaseAuth.instance.currentUser != null
-    ? FutureBuilder<String?>(
-        future: userProfile.getUserProfilePicture(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-            return CircleAvatar(
-              radius: 14,
-              backgroundImage: NetworkImage(snapshot.data!),
-            );
-          } else {
-            return Icon(Icons.person);
-          }
-        },
-      )
-    : Icon(Icons.person),
-  label: FirebaseAuth.instance.currentUser != null
-    ? FirebaseAuth.instance.currentUser!.email!.split('@')[0]
-    : 'Sign In',
-),
-
-
+          BottomNavigationBarItem(
+            icon: FirebaseAuth.instance.currentUser != null
+                ? FutureBuilder<String?>(
+                    future: userProfile.getUserProfilePicture(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done &&
+                          snapshot.hasData) {
+                        return CircleAvatar(
+                          radius: 14,
+                          backgroundImage: NetworkImage(snapshot.data!),
+                        );
+                      } else {
+                        return Icon(Icons.person);
+                      }
+                    },
+                  )
+                : Icon(Icons.person),
+            label: FirebaseAuth.instance.currentUser != null
+                ? FirebaseAuth.instance.currentUser!.email!.split('@')[0]
+                : 'Sign In',
+          ),
         ],
       ),
     );

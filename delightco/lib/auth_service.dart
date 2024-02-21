@@ -9,13 +9,14 @@ class AuthService {
   final UserProfile _userProfile = UserProfile();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
+
       return result.user;
     } catch (e) {
       print('Error during sign in: $e');
@@ -39,7 +40,7 @@ class AuthService {
     }
   }
 
-    Future<String?> getUsernameFromUserId(String userId) async {
+  Future<String?> getUsernameFromUserId(String userId) async {
     try {
       DocumentSnapshot<Map<String, dynamic>> snapshot =
           await _firestore.collection('users').doc(userId).get();

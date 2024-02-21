@@ -16,52 +16,51 @@ class _AddPostScreenState extends State<AddPostScreen> {
   int rating = 1;
   File? _pickedImage;
 
-Future<void> _pickImage() async {
-  final ImagePicker picker = ImagePicker();
-  
-  showModalBottomSheet(
-    context: context,
-    builder: (BuildContext context) {
-      return SafeArea(
-        child: Wrap(
-          children: <Widget>[
-            ListTile(
-              leading: Icon(Icons.photo_library),
-              title: Text('Gallery'),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? pickedImage = await picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                _setImage(pickedImage);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.camera_alt),
-              title: Text('Camera'),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? pickedImage = await picker.pickImage(
-                  source: ImageSource.camera,
-                );
-                _setImage(pickedImage);
-              },
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
 
-void _setImage(XFile? pickedImage) {
-  if (pickedImage != null) {
-    setState(() {
-      _pickedImage = File(pickedImage.path);
-    });
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? pickedImage = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  _setImage(pickedImage);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Camera'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? pickedImage = await picker.pickImage(
+                    source: ImageSource.camera,
+                  );
+                  _setImage(pickedImage);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
-}
 
+  void _setImage(XFile? pickedImage) {
+    if (pickedImage != null) {
+      setState(() {
+        _pickedImage = File(pickedImage.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,42 +120,39 @@ void _setImage(XFile? pickedImage) {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-
           await _uploadPost();
-          Navigator.pop(context); 
+          Navigator.pop(context);
         },
         child: Icon(Icons.post_add),
       ),
     );
   }
 
-Future<void> _uploadPost() async {
-  try {
-    User? user = FirebaseAuth.instance.currentUser;
-    String uid = user?.uid ?? '';
+  Future<void> _uploadPost() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      String uid = user?.uid ?? '';
 
-    String postId = FirebaseFirestore.instance.collection('posts').doc().id;
+      String postId = FirebaseFirestore.instance.collection('posts').doc().id;
 
+      if (_pickedImage != null) {
+        firebase_storage.Reference storageRef = firebase_storage
+            .FirebaseStorage.instance
+            .ref()
+            .child('posts/$postId.jpg');
+        await storageRef.putFile(_pickedImage!);
 
-    if (_pickedImage != null) {
-      firebase_storage.Reference storageRef =
-          firebase_storage.FirebaseStorage.instance.ref().child('posts/$postId.jpg');
-      await storageRef.putFile(_pickedImage!);
+        String imageUrl = await storageRef.getDownloadURL();
 
-
-      String imageUrl = await storageRef.getDownloadURL();
-
-      await FirebaseFirestore.instance.collection('posts').doc(postId).set({
-        'userId': uid,
-        'description': descriptionController.text,
-        'rating': rating,
-        'imageUrl': imageUrl, 
-      });
+        await FirebaseFirestore.instance.collection('posts').doc(postId).set({
+          'userId': uid,
+          'description': descriptionController.text,
+          'rating': rating,
+          'imageUrl': imageUrl,
+        });
+      }
+    } catch (e) {
+      print('Error uploading post: $e');
     }
-  } catch (e) {
-    print('Error uploading post: $e');
   }
-}
-
-
 }

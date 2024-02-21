@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
-
 class UserProfile {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -23,19 +22,21 @@ class UserProfile {
   }
 
   Future<String?> getUserProfilePicture() async {
-  try {
-    User? user = _auth.currentUser;
-    String uid = user?.uid ?? '';
+    try {
+      User? user = _auth.currentUser;
+      String uid = user?.uid ?? '';
 
-    firebase_storage.Reference storageRef =
-        firebase_storage.FirebaseStorage.instance.ref().child('profile_pictures/$uid.jpg');
+      firebase_storage.Reference storageRef = firebase_storage
+          .FirebaseStorage.instance
+          .ref()
+          .child('profile_pictures/$uid.jpg');
 
-    String downloadURL = await storageRef.getDownloadURL();
+      String downloadURL = await storageRef.getDownloadURL();
 
-    return downloadURL;
-  } catch (e) {
-    print('Error getting profile picture: $e');
-    return null;
+      return downloadURL;
+    } catch (e) {
+      print('Error getting profile picture: $e');
+      return null;
+    }
   }
-}
 }

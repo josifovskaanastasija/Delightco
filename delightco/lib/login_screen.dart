@@ -31,15 +31,15 @@ class LoginScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 User? user = await AuthService().signInWithEmailAndPassword(
-      emailController.text,
-      passwordController.text,
-    );
+                  emailController.text,
+                  passwordController.text,
+                );
 
-    if (user != null) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      print('Login failed');
-    }
+                if (user != null) {
+                  Navigator.pushReplacementNamed(context, '/home');
+                } else {
+                  print('Login failed');
+                }
               },
               child: Text('Sign In'),
             ),
