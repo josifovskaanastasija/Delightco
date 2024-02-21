@@ -141,6 +141,8 @@ Future<void> saveUserProfile(String uid, String email, File profilePicture) asyn
     'email': email,
     'profilePictureUrl': await storageRef.getDownloadURL(),
     'username': username,
+    'followers': 0,
+    'following': 0,
   });
 }
 
