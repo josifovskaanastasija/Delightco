@@ -19,14 +19,34 @@ class _SignupScreenState extends State<SignupScreen> {
       TextEditingController();
   File? _pickedImage;
 
-  Future<void> _pickImage() async {
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+Future<void> _pickImage() async {
+  final imageSource = await showDialog<ImageSource>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Select Image Source'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(ImageSource.gallery),
+          child: Text('Gallery'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(ImageSource.camera),
+          child: Text('Camera'),
+        ),
+      ],
+    ),
+  );
+
+  if (imageSource != null) {
+    final pickedImage = await ImagePicker().pickImage(source: imageSource);
     if (pickedImage != null) {
       setState(() {
         _pickedImage = File(pickedImage.path);
       });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,10 +135,12 @@ class _SignupScreenState extends State<SignupScreen> {
 Future<void> saveUserProfile(String uid, String email, File profilePicture) async {
   final storageRef = firebase_storage.FirebaseStorage.instance.ref().child('profile_pictures/$uid.jpg');
   await storageRef.putFile(profilePicture);
+  String username = email.split('@')[0]; 
 
   await FirebaseFirestore.instance.collection('users').doc(uid).set({
     'email': email,
     'profilePictureUrl': await storageRef.getDownloadURL(),
+    'username': username,
   });
 }
 

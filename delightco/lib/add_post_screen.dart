@@ -16,14 +16,52 @@ class _AddPostScreenState extends State<AddPostScreen> {
   int rating = 1;
   File? _pickedImage;
 
-  Future<void> _pickImage() async {
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      setState(() {
-        _pickedImage = File(pickedImage.path);
-      });
-    }
+Future<void> _pickImage() async {
+  final ImagePicker picker = ImagePicker();
+  
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return SafeArea(
+        child: Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.photo_library),
+              title: Text('Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? pickedImage = await picker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                _setImage(pickedImage);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt),
+              title: Text('Camera'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? pickedImage = await picker.pickImage(
+                  source: ImageSource.camera,
+                );
+                _setImage(pickedImage);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void _setImage(XFile? pickedImage) {
+  if (pickedImage != null) {
+    setState(() {
+      _pickedImage = File(pickedImage.path);
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
