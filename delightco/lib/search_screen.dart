@@ -19,10 +19,15 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void fetchAllPosts() {
-    FirebaseFirestore.instance.collection('posts').get().then((QuerySnapshot querySnapshot) {
+    FirebaseFirestore.instance
+        .collection('posts')
+        .get()
+        .then((QuerySnapshot querySnapshot) {
       setState(() {
-        allPosts = querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
-        searchResults = allPosts; 
+        allPosts = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+        searchResults = allPosts;
       });
     });
   }
@@ -30,9 +35,13 @@ class _SearchScreenState extends State<SearchScreen> {
   void searchPosts(String query) {
     query = query.toLowerCase();
     setState(() {
-      searchResults = allPosts.where((post) => post['description'].toLowerCase().contains(query)).toList();
+      searchResults = allPosts
+          .where((post) => post['description'].toLowerCase().contains(query))
+          .toList();
     });
   }
+
+  List<Map<String, dynamic>> bookmarkedPosts = [];
 
   @override
   Widget build(BuildContext context) {
@@ -65,9 +74,13 @@ class _SearchScreenState extends State<SearchScreen> {
               itemBuilder: (context, index) {
                 var post = searchResults[index];
                 return FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance.collection('users').doc(post['userId']).get(),
+                  future: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(post['userId'])
+                      .get(),
                   builder: (context, userSnapshot) {
-                    if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    if (userSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return CircularProgressIndicator();
                     }
 
@@ -78,7 +91,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     if (userSnapshot.hasData && userSnapshot.data!.exists) {
                       var username = userSnapshot.data?['username'] ?? '';
-                      var profilePictureUrl = userSnapshot.data?['profilePictureUrl'] ?? '';
+                      var profilePictureUrl =
+                          userSnapshot.data?['profilePictureUrl'] ?? '';
                       print("profilePictureUrl: $profilePictureUrl");
 
                       return PostWidget(
@@ -88,10 +102,29 @@ class _SearchScreenState extends State<SearchScreen> {
                         postPicture: post['imageUrl'],
                         description: post['description'],
                         userId: post['userId'],
+                        isBookmarked: bookmarkedPosts.any((bookmark) =>
+                            bookmark['userId'] == post['userId'] &&
+                            bookmark['description'] == post['description']),
+                        onBookmarkToggle: (isBookmarked) {
+                          setState(() {
+                            if (isBookmarked) {
+                              bookmarkedPosts.add({
+                                'userId': post['userId'],
+                                'description': post['description'],
+                              });
+                            } else {
+                              bookmarkedPosts.removeWhere((bookmark) =>
+                                  bookmark['userId'] == post['userId'] &&
+                                  bookmark['description'] ==
+                                      post['description']);
+                            }
+                          });
+                        },
                       );
                     } else {
                       print("UserID: ${post['userId']}");
-                      return Text('User document not found or does not contain a username field.');
+                      return Text(
+                          'User document not found or does not contain a username field.');
                     }
                   },
                 );

@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_profile.dart';
 import 'post_widget.dart';
+import 'bookmarks_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   String username = '';
   UserProfile userProfile = UserProfile();
+  List<Map<String, dynamic>> bookmarkedPosts = [];
 
   @override
   void initState() {
@@ -122,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             var username = userSnapshot.data?['username'] ?? '';
                             var profilePictureUrl =
                                 userSnapshot.data?['profilePictureUrl'] ?? '';
-                            print("profilePictureUrl: $profilePictureUrl");
+                            print(post['imageUrl']);
 
                             return PostWidget(
                               authorProfilePicture: profilePictureUrl,
@@ -131,6 +133,34 @@ class _MyHomePageState extends State<MyHomePage> {
                               postPicture: post['imageUrl'],
                               description: post['description'],
                               userId: post['userId'],
+                              isBookmarked: bookmarkedPosts.any((bookmark) =>
+                                  bookmark['userId'] == post['userId'] &&
+                                  bookmark['description'] ==
+                                      post['description']),
+                              onBookmarkToggle: (isBookmarked) {
+                                setState(() {
+                                  if (isBookmarked) {
+                                    print("Added to List: " + post['description']);
+                                    
+                                    bookmarkedPosts.add({
+                                      'username': username,
+                                      'rating': post['rating'],
+                                      'userId': post['userId'],
+                                      'description': post['description'],
+                                      'imageUrl': post['imageUrl']
+                                    });
+                                  } else {
+                                    print("Removed to List: " + post['description']);
+                                    bookmarkedPosts.removeWhere((bookmark) =>
+      bookmark['userId'] == post['userId'] &&
+      bookmark['description'] == post['description'] &&
+      bookmark['username'] == username &&
+      bookmark['rating'] == post['rating'] &&
+      bookmark['imageUrl'] == post['imageUrl']
+  );
+                                  }
+                                });
+                              },
                             );
                           } else {
                             print("UserID: ${post['userId']}");
@@ -158,6 +188,14 @@ class _MyHomePageState extends State<MyHomePage> {
               Navigator.pushNamed(context, '/add_post');
             } else if (index == 3) {
               Navigator.pushNamed(context, '/profile');
+            } else if (index==1) {
+              Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => BookmarksScreen(bookmarkedPosts: bookmarkedPosts),
+  ),
+);
+
             }
           });
         },

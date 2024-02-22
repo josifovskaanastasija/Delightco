@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flutter/material.dart';
 import 'user_profile.dart';
 
 class PostWidget extends StatefulWidget {
@@ -12,7 +10,9 @@ class PostWidget extends StatefulWidget {
   final String postPicture;
   final String description;
   final String userId;
-  
+  bool isBookmarked;
+  final Function(bool) onBookmarkToggle;
+
   PostWidget({
     required this.authorProfilePicture,
     required this.username,
@@ -20,10 +20,11 @@ class PostWidget extends StatefulWidget {
     required this.postPicture,
     required this.description,
     required this.userId,
+    this.isBookmarked = false,
+    required this.onBookmarkToggle,
   });
   @override
   _PostWidgetState createState() => _PostWidgetState();
-
 }
 
 class _PostWidgetState extends State<PostWidget> {
@@ -38,6 +39,12 @@ class _PostWidgetState extends State<PostWidget> {
       }
     }
     return stars;
+  }
+
+  void toggleBookmark() {
+    setState(() {
+      widget.isBookmarked = !widget.isBookmarked;
+    });
   }
 
   @override
@@ -59,7 +66,8 @@ class _PostWidgetState extends State<PostWidget> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UserProfileScreen(userId: widget.userId),
+                      builder: (context) =>
+                          UserProfileScreen(userId: widget.userId),
                     ),
                   );
                 },
@@ -71,6 +79,15 @@ class _PostWidgetState extends State<PostWidget> {
                     color: Colors.blue,
                   ),
                 ),
+              ),
+              Spacer(),
+              IconButton(
+                icon: widget.isBookmarked
+                    ? Icon(Icons.bookmark)
+                    : Icon(Icons.bookmark_border),
+                onPressed: () {
+                  widget.onBookmarkToggle(!widget.isBookmarked);
+                },
               ),
             ],
           ),
@@ -90,36 +107,36 @@ class _PostWidgetState extends State<PostWidget> {
               style: DefaultTextStyle.of(context).style,
               children: [
                 TextSpan(
-        text: '${widget.username} ',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      isExpanded
-          ? TextSpan(
-              text: widget.description,
-            )
-          : TextSpan(
-              text: widget.description.length > 250
-                  ? widget.description.substring(0, 250) + '...'
-                  : widget.description,
-            ),
-      widget.description.length > 250
-          ? WidgetSpan(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isExpanded = !isExpanded;
-                  });
-                },
-                child: Text(
-                  isExpanded ? ' View Less' : ' View More',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  text: '${widget.username} ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              ),
-            )
-          : TextSpan(),
+                isExpanded
+                    ? TextSpan(
+                        text: widget.description,
+                      )
+                    : TextSpan(
+                        text: widget.description.length > 250
+                            ? widget.description.substring(0, 250) + '...'
+                            : widget.description,
+                      ),
+                widget.description.length > 250
+                    ? WidgetSpan(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isExpanded = !isExpanded;
+                            });
+                          },
+                          child: Text(
+                            isExpanded ? ' View Less' : ' View More',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      )
+                    : TextSpan(),
               ],
             ),
           ),
@@ -197,7 +214,6 @@ class UserProfileScreen extends StatelessWidget {
           SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              // Implement follow logic
             },
             child: Text('Follow'),
           ),
@@ -348,7 +364,6 @@ class UserProfileScreen extends StatelessWidget {
   }
 }
 
-
 class FullPostScreen extends StatelessWidget {
   final String authorProfilePicture;
   final String username;
@@ -418,13 +433,12 @@ class FullPostScreen extends StatelessWidget {
             Image.network(postPicture),
             SizedBox(height: 8),
             RichText(
-              
-            text: TextSpan(
-              style: TextStyle(
+              text: TextSpan(
+                style: TextStyle(
                   color: Colors.black,
                   fontSize: 16,
-                  ),
-              children: [
+                ),
+                children: [
                   TextSpan(
                     text: '$username ',
                     style: TextStyle(
@@ -437,7 +451,7 @@ class FullPostScreen extends StatelessWidget {
                   ),
                 ],
               ),
-          ),
+            ),
           ],
         ),
       ),
