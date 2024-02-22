@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'user_profile.dart';
 
 class PostWidget extends StatefulWidget {
@@ -12,6 +14,7 @@ class PostWidget extends StatefulWidget {
   final String userId;
   bool isBookmarked;
   final Function(bool) onBookmarkToggle;
+  final GeoPoint? location;
 
   PostWidget({
     required this.authorProfilePicture,
@@ -22,13 +25,39 @@ class PostWidget extends StatefulWidget {
     required this.userId,
     this.isBookmarked = false,
     required this.onBookmarkToggle,
+    required this.location,
   });
   @override
   _PostWidgetState createState() => _PostWidgetState();
 }
 
 class _PostWidgetState extends State<PostWidget> {
+  
   bool isExpanded = false;
+String? placeName;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.location != null) {
+      _getPlaceName(widget.location!);
+    }
+  }
+
+    Future<void> _getPlaceName(GeoPoint location) async {
+    try {
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(location.latitude, location.longitude);
+      if (placemarks.isNotEmpty) {
+        setState(() {
+          placeName = placemarks[0].name;
+        });
+      }
+    } catch (e) {
+      print('Error getting place name: $e');
+    }
+  }
+
   List<Widget> buildStarRating(int rating) {
     List<Widget> stars = [];
     for (int i = 1; i <= 5; i++) {
@@ -39,6 +68,18 @@ class _PostWidgetState extends State<PostWidget> {
       }
     }
     return stars;
+  }
+
+    Future<void> _launchGoogleMaps() async {
+    if (widget.location != null) {
+      final String googleMapsUrl =
+          'https://www.google.com/maps/search/?api=1&query=${widget.location!.latitude},${widget.location!.longitude}';
+      if (await canLaunch(googleMapsUrl)) {
+        await launch(googleMapsUrl);
+      } else {
+        print('Could not launch Google Maps');
+      }
+    }
   }
 
   void toggleBookmark() {
@@ -99,6 +140,23 @@ class _PostWidgetState extends State<PostWidget> {
               Row(children: buildStarRating(widget.rating)),
             ],
           ),
+           if (widget.location != null && placeName != null) 
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _launchGoogleMaps,
+                  child: Text(
+                    'Location: $placeName (Open in Maps)',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           SizedBox(height: 8),
           Image.network(widget.postPicture),
           SizedBox(height: 8),

@@ -140,27 +140,34 @@ class _MyHomePageState extends State<MyHomePage> {
                               onBookmarkToggle: (isBookmarked) {
                                 setState(() {
                                   if (isBookmarked) {
-                                    print("Added to List: " + post['description']);
-                                    
+                                    print("Added to List: " +
+                                        post['description']);
+
                                     bookmarkedPosts.add({
                                       'username': username,
                                       'rating': post['rating'],
                                       'userId': post['userId'],
                                       'description': post['description'],
-                                      'imageUrl': post['imageUrl']
+                                      'imageUrl': post['imageUrl'],
+                                      'location': post['location'],
                                     });
                                   } else {
-                                    print("Removed to List: " + post['description']);
+                                    print("Removed to List: " +
+                                        post['description']);
                                     bookmarkedPosts.removeWhere((bookmark) =>
-      bookmark['userId'] == post['userId'] &&
-      bookmark['description'] == post['description'] &&
-      bookmark['username'] == username &&
-      bookmark['rating'] == post['rating'] &&
-      bookmark['imageUrl'] == post['imageUrl']
-  );
+                                        bookmark['userId'] == post['userId'] &&
+                                        bookmark['description'] ==
+                                            post['description'] &&
+                                        bookmark['username'] == username &&
+                                        bookmark['rating'] == post['rating'] &&
+                                        bookmark['imageUrl'] ==
+                                            post['imageUrl'] &&
+                                        bookmark['location'] ==
+                                            post['location']);
                                   }
                                 });
                               },
+                              location: post['location'],
                             );
                           } else {
                             print("UserID: ${post['userId']}");
@@ -188,14 +195,14 @@ class _MyHomePageState extends State<MyHomePage> {
               Navigator.pushNamed(context, '/add_post');
             } else if (index == 3) {
               Navigator.pushNamed(context, '/profile');
-            } else if (index==1) {
+            } else if (index == 1) {
               Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => BookmarksScreen(bookmarkedPosts: bookmarkedPosts),
-  ),
-);
-
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      BookmarksScreen(bookmarkedPosts: bookmarkedPosts),
+                ),
+              );
             }
           });
         },

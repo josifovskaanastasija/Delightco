@@ -119,7 +119,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                       post['description']);
                             }
                           });
-                        },
+                        }, location: post['location']
                       );
                     } else {
                       print("UserID: ${post['userId']}");
