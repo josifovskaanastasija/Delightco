@@ -59,7 +59,6 @@ class _SearchScreenState extends State<SearchScreen> {
             return Text('Error: ${snapshot.error}');
           }
 
-          var posts = snapshot.data?.docs ?? [];
           return Expanded(
             child: ListView.builder(
               itemCount: searchResults.length,
